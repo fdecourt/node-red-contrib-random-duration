@@ -1,0 +1,182 @@
+<script type="text/html" data-template-name="random-duration">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Node name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-output"><i class="fa fa-arrow-right"></i> Output to</label>
+        <input type="text" id="node-input-output" style="width: 70%;" placeholder="payload">
+        <input type="hidden" id="node-input-outputType">
+    </div>
+    <div class="form-row">
+        <label for="node-input-minTime"><i class="icon-clock"></i> Minimum Duration (HH:mm:ss)</label>
+        <input type="text" id="node-input-minTime" placeholder="Leave empty to use Input From">
+    </div>
+    <div class="form-row">
+        <label for="node-input-minTimeFrom"><i class="fa fa-arrow-left"></i> Input From (Minimum)</label>
+        <input type="text" id="node-input-minTimeFrom" style="width: 70%;" placeholder="from">
+        <input type="hidden" id="node-input-minTimeFromType">
+    </div>
+    <div class="form-row">
+        <label for="node-input-maxTime"><i class="icon-clock"></i> Maximum Duration (HH:mm:ss)</label>
+        <input type="text" id="node-input-maxTime" placeholder="Leave empty to use Input From">
+    </div>
+    <div class="form-row">
+        <label for="node-input-maxTimeFrom"><i class="fa fa-arrow-left"></i> Input From (Maximum)</label>
+        <input type="text" id="node-input-maxTimeFrom" style="width: 70%;" placeholder="to">
+        <input type="hidden" id="node-input-maxTimeFromType">
+    </div>
+
+    <!-- Helper Text at the Bottom of the Form -->
+    <div class="form-tips">
+        <p><strong>Usage Tips:</strong></p>
+        <ul>
+            <li>If you provide values in the 'Minimum Duration' and 'Maximum Duration' fields, those will be used for generating the random duration.</li>
+            <li>If you leave the 'Minimum Duration' and 'Maximum Duration' fields empty, the node will use the properties specified in 'Input From (Minimum)' and 'Input From (Maximum)' from the incoming message.</li>
+            <li>The 'Output to' field determines where in the message the generated duration will be stored. By default, it is <code>msg.payload</code>.</li>
+            <li>All durations must be in <code>HH:mm:ss</code> format.</li>
+        </ul>
+    </div>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('random-duration', {
+        category: 'function',
+        color: '#a6bbcf',
+        defaults: {
+            name: { value: '' },
+            output: { value: 'payload', required: false },
+            outputType: { value: 'msg', required: false },
+            minTime: {
+                value: '',
+                required: false,
+                validate: function (v) {
+                    return v === '' || /^(\d{2}):(\d{2}):(\d{2})$/.test(v);
+                }
+            },
+            minTimeFrom: { value: 'from', required: false },
+            minTimeFromType: { value: 'msg', required: false },
+            maxTime: {
+                value: '',
+                required: false,
+                validate: function (v) {
+                    return v === '' || /^(\d{2}):(\d{2}):(\d{2})$/.test(v);
+                }
+            },
+            maxTimeFrom: { value: 'to', required: false },
+            maxTimeFromType: { value: 'msg', required: false }
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: 'timer.svg',
+        label: function () {
+            return this.name || 'Random Duration';
+        },
+        oneditprepare: function () {
+            // Configure the typedInput for 'Output to' to accept 'msg' properties
+            $('#node-input-output').typedInput({
+                default: 'msg',
+                types: ['msg']
+            });
+
+            // Configure the typedInput for 'Input From (Minimum)'
+            $('#node-input-minTimeFrom').typedInput({
+                default: 'msg',
+                types: ['msg']
+            });
+
+            // Configure the typedInput for 'Input From (Maximum)'
+            $('#node-input-maxTimeFrom').typedInput({
+                default: 'msg',
+                types: ['msg']
+            });
+        }
+    });
+</script>
+
+<script type="text/html" data-help-name="random-duration">
+    <h3>Random Duration Node</h3>
+    <p>This node generates a random duration between specified minimum and maximum values.</p>
+
+    <h4>Configuration Fields:</h4>
+    <ul>
+        <li><strong>Name:</strong> An optional label for the node.</li>
+        <li><strong>Output to:</strong> Specifies where in the message the generated duration will be stored. Defaults to <code>msg.payload</code> if left empty.</li>
+        <li><strong>Minimum Duration (HH:mm:ss):</strong> A fixed minimum duration. If left empty, the node will use the value from 'Input From (Minimum)'.</li>
+        <li><strong>Input From (Minimum):</strong> Specifies the message property to use for the minimum duration if 'Minimum Duration' is empty. Defaults to <code>msg.from</code>.</li>
+        <li><strong>Maximum Duration (HH:mm:ss):</strong> A fixed maximum duration. If left empty, the node will use the value from 'Input From (Maximum)'.</li>
+        <li><strong>Input From (Maximum):</strong> Specifies the message property to use for the maximum duration if 'Maximum Duration' is empty. Defaults to <code>msg.to</code>.</li>
+    </ul>
+
+    <h4>Usage Examples:</h4>
+    <h5>Example 1: Using Fixed Durations</h5>
+    <p>Configure 'Minimum Duration' and 'Maximum Duration' with fixed values in <code>HH:mm:ss</code> format. Leave 'Input From' fields empty or at their default. The node will generate a random duration between these fixed values.</p>
+
+    <h5>Example 2: Using Durations from the Message</h5>
+    <p>Leave 'Minimum Duration' and 'Maximum Duration' empty. Set 'Input From (Minimum)' and 'Input From (Maximum)' to the message properties where the durations are provided (e.g., <code>data.minDuration</code> and <code>data.maxDuration</code>). Ensure that the incoming message contains these properties with durations in <code>HH:mm:ss</code> format.</p>
+
+    <h5>Example 3: Custom Output Property</h5>
+    <p>Set 'Output to' to a custom message property (e.g., <code>data.randomDuration</code>). The generated duration will be stored in this property. If left empty, it defaults to <code>msg.payload</code>.</p>
+
+    <h4>Important Notes:</h4>
+    <ul>
+        <li>All durations must be in <code>HH:mm:ss</code> format.</li>
+        <li>If the minimum duration is greater than the maximum duration, the node will report an error.</li>
+        <li>The node supports nested message properties for both input and output.</li>
+    </ul>
+
+    <h4>Error Handling:</h4>
+    <p>If any required durations are missing or improperly formatted, the node will report an error in the debug sidebar. Ensure that all durations are provided and correctly formatted to avoid errors.</p>
+
+    <h4>Example Flow:</h4>
+    <pre><code>[
+    {
+        "id": "injectNode",
+        "type": "inject",
+        "name": "Trigger",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "wires": [["functionNode"]]
+    },
+    {
+        "id": "functionNode",
+        "type": "function",
+        "name": "Set Durations",
+        "func": "msg.data = {};\nmsg.data.minDuration = \"00:00:10\";\nmsg.data.maxDuration = \"00:01:00\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "wires": [["randomDurationNode"]]
+    },
+    {
+        "id": "randomDurationNode",
+        "type": "random-duration",
+        "name": "",
+        "output": "data.randomDuration",
+        "outputType": "msg",
+        "minTime": "",
+        "minTimeFrom": "data.minDuration",
+        "maxTime": "",
+        "maxTimeFrom": "data.maxDuration",
+        "wires": [["debugNode"]]
+    },
+    {
+        "id": "debugNode",
+        "type": "debug",
+        "name": "Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "wires": []
+    }
+]</code></pre>
+    <p>In this example, the random duration is generated using durations from the message and stored in <code>msg.data.randomDuration</code>.</p>
+</script>
