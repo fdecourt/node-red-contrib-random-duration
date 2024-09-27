@@ -7,6 +7,7 @@ module.exports = function (RED) {
         // Output configuration
         node.output = config.output || 'payload'; // Default output property is 'payload'
         node.outputType = config.outputType || 'msg';
+        node.outputFormat = config.outputFormat || 'hh:mm:ss'; // Default output format
 
         // Minimum duration configuration
         node.minTimeConfig = config.minTime; // Minimum duration from configuration
@@ -39,17 +40,43 @@ module.exports = function (RED) {
         }
 
         /**
-         * Formats a total number of seconds into a time string in HH:mm:ss format.
+         * Formats the duration according to the specified output format.
          * @param {number} totalSeconds - The total number of seconds.
-         * @returns {string} - The formatted time string.
+         * @param {string} format - The output format.
+         * @returns {*} - The formatted duration.
          */
-        function formatTime(totalSeconds) {
-            var hours = Math.floor(totalSeconds / 3600);
-            var minutes = Math.floor((totalSeconds % 3600) / 60);
-            var seconds = totalSeconds % 60;
-            return [hours, minutes, seconds].map(function (unit) {
-                return unit < 10 ? '0' + unit : unit;
-            }).join(':');
+        function formatDuration(totalSeconds, format) {
+            switch (format) {
+                case 'hh:mm:ss':
+                    var hours = Math.floor(totalSeconds / 3600);
+                    var minutes = Math.floor((totalSeconds % 3600) / 60);
+                    var seconds = totalSeconds % 60;
+                    return [hours, minutes, seconds].map(function (unit) {
+                        return unit < 10 ? '0' + unit : unit;
+                    }).join(':');
+                case 'seconds':
+                    return totalSeconds;
+                case 'milliseconds':
+                    return totalSeconds * 1000;
+                case 'object':
+                    return {
+                        hours: Math.floor(totalSeconds / 3600),
+                        minutes: Math.floor((totalSeconds % 3600) / 60),
+                        seconds: totalSeconds % 60
+                    };
+                case 'iso':
+                    // ISO 8601 Duration format
+                    var isoHours = Math.floor(totalSeconds / 3600);
+                    var isoMinutes = Math.floor((totalSeconds % 3600) / 60);
+                    var isoSeconds = totalSeconds % 60;
+                    var isoString = 'PT';
+                    if (isoHours > 0) isoString += isoHours + 'H';
+                    if (isoMinutes > 0) isoString += isoMinutes + 'M';
+                    if (isoSeconds > 0 || isoString === 'PT') isoString += isoSeconds + 'S';
+                    return isoString;
+                default:
+                    throw new Error("Unsupported output format: " + format);
+            }
         }
 
         node.on('input', function (msg, send, done) {
@@ -81,13 +108,15 @@ module.exports = function (RED) {
 
                 // Generate a random duration between minSeconds and maxSeconds
                 var randomSeconds = Math.floor(Math.random() * (maxSeconds - minSeconds + 1)) + minSeconds;
-                var randomTimeStr = formatTime(randomSeconds);
+
+                // Format the duration according to the output format
+                var formattedDuration = formatDuration(randomSeconds, node.outputFormat);
 
                 // Use 'payload' as default output property if none specified
                 var outputProperty = node.output || 'payload';
 
                 // Set the generated duration into the specified property of msg
-                RED.util.setMessageProperty(msg, outputProperty, randomTimeStr, true);
+                RED.util.setMessageProperty(msg, outputProperty, formattedDuration, true);
 
                 // Send the modified message
                 send(msg);

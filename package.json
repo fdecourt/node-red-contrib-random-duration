@@ -1,6 +1,6 @@
 {
   "name": "@fdecourt/node-red-contrib-random-duration",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "A Node-RED node that generates a random duration between a minimum and maximum value in HH:mm:ss format.",
   "main": "random-duration.js",
   "keywords": [
@@ -13,7 +13,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/fdecourt/node-red-contrib-random-duration"
+    "url": "git+https://github.com/fdecourt/node-red-contrib-random-duration.git"
   },
   "node-red": {
     "nodes": {
