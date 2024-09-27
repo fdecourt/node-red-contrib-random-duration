@@ -1,6 +1,6 @@
 {
   "name": "@fdecourt/node-red-contrib-random-duration",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A Node-RED node that generates a random duration between a minimum and maximum value in HH:mm:ss format.",
   "main": "random-duration.js",
   "keywords": [
