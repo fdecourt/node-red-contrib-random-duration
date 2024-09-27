@@ -1,6 +1,6 @@
 # node-red-contrib-random-duration
 
-A Node-RED node that generates a random duration between specified minimum and maximum values in `HH:mm:ss` format.
+A Node-RED node that generates a random duration between specified minimum and maximum values in various format.
 
 ## Overview
 
@@ -28,6 +28,7 @@ After installation, the random-duration node will appear in the function categor
 
 ### Fields
 - **Name**: (Optional) A label for the node displayed in the editor.
+- **Output format**: Specifies the format of the output (HH:mm:ss, seconds, miliseconds, ISO 8601 format)
 - **Output to**: (Optional) Specifies where in the message to store the generated duration. Defaults to msg.payload if left empty.
 - **Minimum Duration (HH:mm:ss)**: (Optional) A fixed minimum duration. If left empty, the node will use the value from **'Input From (Minimum)'**.
 - **Input From (Minimum)**: (Optional) Specifies the message property to use for the minimum duration if 'Minimum Duration' is empty. Defaults to msg.from.
